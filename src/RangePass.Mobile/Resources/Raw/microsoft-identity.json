@@ -1,0 +1,10 @@
+{
+  "Authority": "https://login.microsoftonline.com/common",
+  "ClientId": "YOUR_CLIENT_ID",
+  "RedirectUri": "rangepass://auth",
+  "Scopes": [
+    "openid",
+    "profile",
+    "offline_access"
+  ]
+}

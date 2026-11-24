@@ -1,0 +1,116 @@
+﻿@page "/"
+@inject MicrosoftIdentityAuthService Auth
+@implements IDisposable
+
+@if (!Auth.IsConfigured)
+{
+    <main class="auth-shell">
+        <section class="auth-panel">
+            <p class="eyebrow">RANGEPASS</p>
+            <h1>Sign in to your range journal</h1>
+            <p class="muted">Configure the Microsoft identity app registration before this client can authenticate.</p>
+            <div class="setup-note">Development setup required</div>
+        </section>
+    </main>
+}
+else if (!Auth.IsSignedIn)
+{
+    <main class="auth-shell">
+        <section class="auth-panel">
+            <p class="eyebrow">RANGEPASS</p>
+            <h1>Keep every visit in one place</h1>
+            <p class="muted">A private journal for your range visits and supporting evidence.</p>
+            <button class="primary-button" @onclick="SignInAsync" disabled="@_isSigningIn">
+                @( _isSigningIn ? "Opening sign-in…" : "Sign in with Microsoft" )
+            </button>
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <p class="error-text">@_error</p>
+            }
+        </section>
+    </main>
+}
+else
+{
+    <main class="journal-shell">
+        <header class="journal-header">
+            <div>
+                <p class="eyebrow">RANGEPASS</p>
+                <h1>Good to see you</h1>
+            </div>
+            <button class="icon-button" title="Sign out" @onclick="SignOutAsync">Sign out</button>
+        </header>
+
+        <section class="visit-card">
+            <h2>Start a range visit</h2>
+            <label>
+                Range
+                <input @bind="_rangeName" placeholder="Range name" />
+            </label>
+            <div class="field-grid">
+                <label>
+                    Date
+                    <input type="date" @bind="_visitDate" />
+                </label>
+                <label>
+                    Rounds
+                    <input type="number" min="0" @bind="_rounds" />
+                </label>
+            </div>
+            <label>
+                Notes
+                <textarea @bind="_notes" placeholder="Optional" rows="3"></textarea>
+            </label>
+            <button class="primary-button" @onclick="SaveVisit">Save visit</button>
+        </section>
+
+        @if (!string.IsNullOrWhiteSpace(_savedMessage))
+        {
+            <p class="saved-message">@_savedMessage</p>
+        }
+    </main>
+}
+
+@code {
+    private bool _isSigningIn;
+    private string? _error;
+    private string? _savedMessage;
+    private string _rangeName = "";
+    private DateTime _visitDate = DateTime.Today;
+    private int _rounds;
+    private string _notes = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Auth.AuthenticationChanged += OnAuthenticationChanged;
+        await Auth.InitializeAsync();
+    }
+
+    private void OnAuthenticationChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SignInAsync()
+    {
+        _isSigningIn = true;
+        _error = null;
+        _error = await Auth.SignInAsync();
+        _isSigningIn = false;
+    }
+
+    private async Task SignOutAsync()
+    {
+        _error = await Auth.SignOutAsync();
+    }
+
+    private void SaveVisit()
+    {
+        _savedMessage = "Visit saved locally for this prototype.";
+    }
+
+    public void Dispose()
+    {
+        Auth.AuthenticationChanged -= OnAuthenticationChanged;
+    }
+}

@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RangePass.Api/RangePass.Api.csproj" />
+    <Project Path="src/RangePass.Mobile/RangePass.Mobile.csproj" />
+  </Folder>
+</Solution>
